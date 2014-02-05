@@ -11,8 +11,11 @@ import org.junit.Test;
  */
 public class AuthServiceTest {
 	@Test
-	public void nothing() {
+	public void canCreate() {
+		AuthService authService = new AuthService();
+	}
 
+	private class AuthService {
 	}
 }
 
