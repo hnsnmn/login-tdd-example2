@@ -1,5 +1,11 @@
+import domain.User;
+import exception.NonExistingUserException;
+import exception.WrongPasswordException;
 import org.junit.Before;
 import org.junit.Test;
+import security.AuthService;
+import security.Authentication;
+import security.UserRepository;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -27,11 +33,6 @@ public class AuthServiceTest {
 		authService = new AuthService();
 		mockUserRepository = mock(UserRepository.class);
 		authService.setUserRepository(mockUserRepository);
-	}
-
-	@Test
-	public void canCreate() {
-		AuthService authService = new AuthService();
 	}
 
 	@Test
@@ -87,91 +88,4 @@ public class AuthServiceTest {
 		assertThat(throwEx, instanceOf(type));
 	}
 
-	private class AuthService {
-
-		private void setUserRepository(UserRepository userRepository) {
-			this.userRepository = userRepository;
-		}
-
-		private UserRepository userRepository;
-
-		public Authentication authenticate(String id, String password) {
-			throwExceptionIfIdAndPwIsInvalid(id, password);
-
-			User user = findUserOrThrowNonExistingEx(id);
-			throwExceptionIfPasswordIsWrong(password, user);
-
-			return createAuthencation(user);
-		}
-
-		private void throwExceptionIfIdAndPwIsInvalid(String id, String password) {
-			if (id == null || id.isEmpty())
-				throw new IllegalArgumentException();
-			if (password == null || password.isEmpty())
-				throw new IllegalArgumentException();
-		}
-
-		private User findUserOrThrowNonExistingEx(String id) {
-			User user = findUserById(id);
-			if (user == null)
-				throw new NonExistingUserException();
-			return user;
-		}
-
-		private void throwExceptionIfPasswordIsWrong(String password, User user) {
-			if (!user.matchPassword(password))
-				throw new WrongPasswordException();
-		}
-
-		private Authentication createAuthencation(User user) {
-			return new Authentication(user.getId());
-		}
-
-		private User findUserById(String id) {
-			return userRepository.findById(id);
-//			if (id.equals("userId"))
-//				return new User(id, "12345");
-//			return null;
-		}
-	}
-
-	private class NonExistingUserException extends RuntimeException {
-	}
-
-	private class User {
-		private String id;
-		private String password;
-
-		public User(String id, String password) {
-			this.id = id;
-			this.password = password;
-		}
-
-		public boolean matchPassword(String password) {
-			return this.password == password;
-		}
-
-		public String getId() {
-			return this.id;
-		}
-	}
-
-	private class WrongPasswordException extends RuntimeException {
-	}
-
-	private interface UserRepository {
-		User findById(String id);
-	}
-
-	private class Authentication {
-		public String id;
-
-		public Authentication(String id) {
-			this.id = id;
-		}
-
-		private String getId() {
-			return id;
-		}
-	}
 }
